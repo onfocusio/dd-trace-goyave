@@ -1,0 +1,39 @@
+run:
+  go: "1.19"
+
+linters-settings:
+  gocyclo:
+    min-complexity: 15
+  gofmt:
+    simplify: true
+  misspell:
+    locale: US
+  govet:
+    disable:
+      - shadow
+      - nilness
+    enable-all: true
+
+linters:
+  enable:
+    - gofmt
+    - revive
+    - gocyclo
+    - misspell
+    - govet
+    - unused
+    - errcheck
+    - exportloopref
+  disable-all: false
+  fast: false
+
+issues:
+  exclude-use-default: false
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  exclude:
+    - should have a package comment
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - gocyclo
