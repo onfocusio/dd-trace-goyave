@@ -19,11 +19,7 @@ type testUser struct {
 }
 
 func (u testUser) ToDatadogUser() DatadogUser {
-	return DatadogUser{
-		ID:    u.ID,
-		Name:  u.Name,
-		Email: u.Email,
-	}
+	return DatadogUser(u)
 }
 
 type MiddlewareTestSuite struct {
