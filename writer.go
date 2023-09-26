@@ -19,7 +19,7 @@ type Writer struct {
 	span     tracer.Span
 }
 
-// NewWriter create a new writer meant for use in a single response.
+// NewWriter creates a new writer meant for use in a single response.
 // Starts the span right away with the common options (service name, uri, method, route name, span kind and type).
 func NewWriter(response *goyave.Response, request *goyave.Request) *Writer {
 	spanOpts := []tracer.StartSpanOption{
