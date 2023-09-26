@@ -6,6 +6,16 @@ stages: [test]
 default:
   image: ${CI_REGISTRY}/adagioio/devops/docker-adagio-build-v2
 
+lint:
+  stage: test
+  script:
+    - curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.54.2
+    - go mod download
+    - ./bin/golangci-lint run --timeout 5m
+  cache:
+    paths:
+      - ${GOPATH}/pkg/mod
+
 test:
   stage: test
   script:
