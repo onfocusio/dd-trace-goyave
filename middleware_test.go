@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/ext"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/mocktracer"
+	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 	"goyave.dev/goyave/v4"
 	"goyave.dev/goyave/v4/config"
 )
@@ -51,7 +52,12 @@ func (suite *MiddlewareTestSuite) TestWriter() {
 			suite.Equal(request, traceWriter.request)
 		}).Name("test-route")
 	}, func() {
-		result, err := suite.Get("/test/param-value", nil)
+		headers := map[string]string{
+			tracer.DefaultParentIDHeader: "1234567",
+			tracer.DefaultTraceIDHeader:  "7654321",
+			tracer.DefaultPriorityHeader: "1",
+		}
+		result, err := suite.Get("/test/param-value", headers)
 
 		if !suite.NoError(err) {
 			return
@@ -77,6 +83,8 @@ func (suite *MiddlewareTestSuite) TestWriter() {
 		suite.Equal("test-route", span.Tag(ext.HTTPRoute))
 		suite.Equal(http.StatusForbidden, span.Tag(ext.HTTPCode))
 		suite.Equal(`{"Name":"test","Email":"test@example.org","ID":1}`, span.Tag(TagUser))
+		suite.Equal(uint64(1234567), span.ParentID())
+		suite.Equal(uint64(7654321), span.TraceID())
 	})
 }
 
