@@ -1,4 +1,4 @@
-module gitlab.com/adagioio/frontend/dd-trace-goyave
+module github.com/onfocusio/dd-trace-goyave
 
 go 1.19
 
@@ -46,5 +46,3 @@ require (
 	gorm.io/gorm v1.25.3 // indirect
 	inet.af/netaddr v0.0.0-20230525184311-b8eac61e914a // indirect
 )
-
-replace goyave.dev/goyave/v4 v4.4.11 => github.com/onfocusio/goyave/v4 v4.6.1

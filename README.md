@@ -1,6 +1,6 @@
 # dd-trace-goyave
 
-Datadog trace client library for the Goyave framework. This provides utilities to start a background tracer and automatically trace all HTTP requests received.
+Datadog trace client library for the Goyave framework (Onfocus fork). This provides utilities to start a background tracer and automatically trace all HTTP requests received.
 
 The tracer connects to a locally running datadog agent. **This is required** for this library to work. By default, the tracer starts with the following options:
 - Service name
@@ -26,7 +26,7 @@ First, make sure the following configuration entries are set:
 
 In the `main` function, start the tracer after loading the config:
 ```go
-import goyavetrace "gitlab.com/adagioio/frontend/dd-trace-goyave"
+import goyavetrace "github.com/onfocusio/dd-trace-goyave"
 
 func main() {
     err := config.Load()
@@ -45,7 +45,7 @@ The `Start()` function accepts a variadic slice of `tracer.StartOption` if you n
 
 Finally, in the main route registrer, add the global middleware so it is applied to all requests, even  if they don't match any route.
 ```go
-import goyavetrace "gitlab.com/adagioio/frontend/dd-trace-goyave"
+import goyavetrace "github.com/onfocusio/dd-trace-goyave"
 
 func Register(router *goyave.Router) {
     router.GlobalMiddleware((&goyavetrace.Middleware{}).Handle)
