@@ -7,6 +7,8 @@ import (
 	"goyave.dev/goyave/v4/config"
 )
 
+const componentName = "goyave.dev/goyave"
+
 // Span tag names
 const (
 	TagUser = "user"

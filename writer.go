@@ -32,7 +32,7 @@ func NewWriter(response *goyave.Response, request *goyave.Request) *Writer {
 		tracer.Tag(ext.HTTPRoute, request.Route().GetName()),
 		tracer.Tag(ext.HTTPUserAgent, request.UserAgent()),
 		tracer.Tag(ext.SpanKind, ext.SpanKindServer),
-		tracer.Tag(ext.Component, "goyave.dev/goyave"),
+		tracer.Tag(ext.Component, componentName),
 		func(cfg *ddtrace.StartSpanConfig) {
 			if spanctx, err := tracer.Extract(tracer.HTTPHeadersCarrier(request.Header())); err == nil {
 				cfg.Parent = spanctx
@@ -63,10 +63,6 @@ func (w *Writer) Write(b []byte) (int, error) {
 // Close the underlying writer, adds the status, error, and user tags to the span
 // and finishes it.
 func (w *Writer) Close() error {
-	if wr, ok := w.writer.(io.Closer); ok {
-		return wr.Close()
-	}
-
 	w.span.SetTag(ext.HTTPCode, w.response.GetStatus())
 	if err := w.response.GetError(); err != nil {
 		w.span.SetTag(ext.Error, err)
@@ -79,5 +75,8 @@ func (w *Writer) Close() error {
 
 	w.span.Finish()
 
+	if wr, ok := w.writer.(io.Closer); ok {
+		return wr.Close()
+	}
 	return nil
 }
