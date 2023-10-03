@@ -33,6 +33,7 @@ func NewWriter(response *goyave.Response, request *goyave.Request) *Writer {
 		tracer.Tag(ext.HTTPUserAgent, request.UserAgent()),
 		tracer.Tag(ext.SpanKind, ext.SpanKindServer),
 		tracer.Tag(ext.Component, componentName),
+		tracer.Tag(ext.ManualKeep, true),
 		func(cfg *ddtrace.StartSpanConfig) {
 			if spanctx, err := tracer.Extract(tracer.HTTPHeadersCarrier(request.Header())); err == nil {
 				cfg.Parent = spanctx

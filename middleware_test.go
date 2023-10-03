@@ -82,6 +82,7 @@ func (suite *MiddlewareTestSuite) TestWriter() {
 		suite.Equal(http.MethodGet, span.Tag(ext.HTTPMethod))
 		suite.Equal("test-route", span.Tag(ext.HTTPRoute))
 		suite.Equal(http.StatusForbidden, span.Tag(ext.HTTPCode))
+		suite.Equal(true, span.Tag(ext.ManualKeep))
 		suite.Equal(`{"Name":"test","Email":"test@example.org","ID":1}`, span.Tag(TagUser))
 		suite.Equal(uint64(1234567), span.ParentID())
 		suite.Equal(uint64(7654321), span.TraceID())
@@ -128,6 +129,7 @@ func (suite *MiddlewareTestSuite) TestWriterWithError() {
 		suite.Equal("test-route", span.Tag(ext.HTTPRoute))
 		suite.Equal(http.StatusInternalServerError, span.Tag(ext.HTTPCode))
 		suite.Equal(fmt.Errorf("custom error"), span.Tag(ext.Error))
+		suite.Equal(true, span.Tag(ext.ManualKeep))
 		suite.NotEmpty(span.Tag(ext.ErrorStack))
 		// In actual implementation (not mock), the ext.ErrorMsg and ext.ErrorType are added
 	})
