@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
+	"goyave.dev/goyave/v4"
 	"goyave.dev/goyave/v4/config"
 )
 
@@ -13,6 +14,9 @@ const componentName = "goyave.dev/goyave"
 const (
 	TagUser = "user"
 )
+
+// SpanOption function altering a span before finishing it. This can be used to add custom tags to the span.
+type SpanOption func(tracer.Span, *goyave.Response, *goyave.Request)
 
 // DatadogUser minimal structure to identify a user at the origin of a trace.
 type DatadogUser struct {

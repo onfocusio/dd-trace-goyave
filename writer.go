@@ -14,15 +14,19 @@ import (
 // and the response to convert it as tags for a datadog span. The span is finished and
 // reported when `Close()` is called.
 type Writer struct {
-	writer   io.Writer
-	request  *goyave.Request
-	response *goyave.Response
-	span     tracer.Span
+	writer     io.Writer
+	request    *goyave.Request
+	response   *goyave.Response
+	span       tracer.Span
+	spanOption SpanOption
 }
 
 // NewWriter creates a new writer meant for use in a single response.
 // Starts the span right away with the common options (service name, uri, method, route name, span kind and type).
-func NewWriter(response *goyave.Response, request *goyave.Request) *Writer {
+//
+// The given `SpanOption` is executed before ending the span (at the end of the request life-cycle) and can be used to add
+// tags to the span. Can be `nil`.
+func NewWriter(response *goyave.Response, request *goyave.Request, spanOption SpanOption) *Writer {
 	spanOpts := []tracer.StartSpanOption{
 		tracer.ServiceName(config.GetString("app.datadog.service")),
 		tracer.Tag(ext.Environment, config.GetString("app.environment")),
@@ -33,7 +37,6 @@ func NewWriter(response *goyave.Response, request *goyave.Request) *Writer {
 		tracer.Tag(ext.HTTPUserAgent, request.UserAgent()),
 		tracer.Tag(ext.SpanKind, ext.SpanKindServer),
 		tracer.Tag(ext.Component, componentName),
-		tracer.Tag(ext.ManualKeep, true),
 		func(cfg *ddtrace.StartSpanConfig) {
 			if spanctx, err := tracer.Extract(tracer.HTTPHeadersCarrier(request.Header())); err == nil {
 				cfg.Parent = spanctx
@@ -42,10 +45,11 @@ func NewWriter(response *goyave.Response, request *goyave.Request) *Writer {
 	}
 
 	return &Writer{
-		writer:   response.Writer(),
-		request:  request,
-		response: response,
-		span:     tracer.StartSpan("web.request", spanOpts...),
+		writer:     response.Writer(),
+		request:    request,
+		response:   response,
+		span:       tracer.StartSpan("web.request", spanOpts...),
+		spanOption: spanOption,
 	}
 }
 
@@ -72,6 +76,10 @@ func (w *Writer) Close() error {
 
 	if u, ok := w.request.User.(DatadogUserConverter); ok {
 		w.span.SetTag(TagUser, u.ToDatadogUser().String())
+	}
+
+	if w.spanOption != nil {
+		w.spanOption(w.span, w.response, w.request)
 	}
 
 	w.span.Finish()

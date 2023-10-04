@@ -36,7 +36,13 @@ func (suite *MiddlewareTestSuite) TestWriter() {
 	mt := mocktracer.Start()
 	defer mt.Stop()
 	suite.RunServer(func(r *goyave.Router) {
-		r.GlobalMiddleware((&Middleware{}).Handle)
+		r.GlobalMiddleware((&Middleware{
+			SpanOption: func(s tracer.Span, resp *goyave.Response, req *goyave.Request) {
+				suite.NotNil(resp)
+				suite.NotNil(req)
+				s.SetTag(ext.ManualKeep, true)
+			},
+		}).Handle)
 		r.Get("/test/{param}", func(response *goyave.Response, request *goyave.Request) {
 			request.User = &testUser{ID: 1, Name: "test", Email: "test@example.org"}
 			suite.NoError(response.String(http.StatusForbidden, "forbidden message"))
@@ -129,7 +135,6 @@ func (suite *MiddlewareTestSuite) TestWriterWithError() {
 		suite.Equal("test-route", span.Tag(ext.HTTPRoute))
 		suite.Equal(http.StatusInternalServerError, span.Tag(ext.HTTPCode))
 		suite.Equal(fmt.Errorf("custom error"), span.Tag(ext.Error))
-		suite.Equal(true, span.Tag(ext.ManualKeep))
 		suite.NotEmpty(span.Tag(ext.ErrorStack))
 		// In actual implementation (not mock), the ext.ErrorMsg and ext.ErrorType are added
 	})
