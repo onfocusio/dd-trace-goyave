@@ -48,7 +48,15 @@ Finally, in the main route registrer, add the global middleware so it is applied
 import goyavetrace "github.com/onfocusio/dd-trace-goyave"
 
 func Register(router *goyave.Router) {
-    router.GlobalMiddleware((&goyavetrace.Middleware{}).Handle)
+
+    // Add custom tags to the spans
+    spanOption := func(s tracer.Span, _ *goyave.Response, _ *goyave.Request) {
+        s.SetTag(ext.ManualKeep, true)
+    }
+
+    router.GlobalMiddleware((&goyavetrace.Middleware{
+        SpanOption: spanOption, // Optional
+    }).Handle)
 
     //...
 }
