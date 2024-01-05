@@ -140,6 +140,64 @@ func (suite *MiddlewareTestSuite) TestWriterWithError() {
 	})
 }
 
+func (suite *MiddlewareTestSuite) TestSpanContext() {
+	err := config.LoadJSON(`{"app": {"environment": "test", "datadog": {"service": "service-name"}}}`)
+	if !suite.NoError(err) {
+		return
+	}
+
+	mt := mocktracer.Start()
+	defer mt.Stop()
+	suite.RunServer(func(r *goyave.Router) {
+		r.GlobalMiddleware((&Middleware{
+			SpanOption: func(s tracer.Span, resp *goyave.Response, req *goyave.Request) {
+				suite.NotNil(resp)
+				suite.NotNil(req)
+				s.SetTag(ext.ManualKeep, true)
+			},
+		}).Handle)
+		r.Get("/test", func(response *goyave.Response, request *goyave.Request) {
+			ctx := request.Request().Context()
+
+			span, _ := tracer.StartSpanFromContext(ctx, "test-span")
+			span.Finish()
+
+			suite.NoError(response.String(http.StatusNoContent, ""))
+		}).Name("test-route")
+	}, func() {
+		result, err := suite.Get("/test", nil)
+
+		if !suite.NoError(err) {
+			return
+		}
+		suite.Equal(http.StatusNoContent, result.StatusCode)
+
+		spans := mt.FinishedSpans()
+		if !suite.Len(spans, 2) {
+			return
+		}
+
+		{
+			span := spans[0]
+			suite.Equal("test-span", span.OperationName())
+			suite.NotZero(span.ParentID())
+		}
+
+		{
+			span := spans[1]
+			suite.Equal("web.request", span.OperationName())
+			suite.Equal("goyave.dev/goyave", span.Tag(ext.Component))
+			suite.Equal("service-name", span.Tag(ext.ServiceName))
+			suite.Equal("test", span.Tag(ext.Environment))
+			suite.Equal(ext.SpanTypeWeb, span.Tag(ext.SpanType))
+			suite.Equal(ext.SpanKindServer, span.Tag(ext.SpanKind))
+			suite.Equal("/test", span.Tag(ext.HTTPURL))
+			suite.Equal(http.MethodGet, span.Tag(ext.HTTPMethod))
+			suite.Equal("test-route", span.Tag(ext.HTTPRoute))
+		}
+	})
+}
+
 func TestWriterSuite(t *testing.T) {
 	err := config.LoadJSON(`{"app": {"environment": "test", "datadog": {"service": "service-name"}}}`)
 	if !assert.NoError(t, err) {
