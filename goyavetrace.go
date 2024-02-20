@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
-	"goyave.dev/goyave/v4"
-	"goyave.dev/goyave/v4/config"
+	"goyave.dev/goyave/v5"
+	"goyave.dev/goyave/v5/util/errors"
 )
 
 const componentName = "goyave.dev/goyave"
@@ -14,6 +14,18 @@ const componentName = "goyave.dev/goyave"
 const (
 	TagUser = "user"
 )
+
+// Config common information for all traces.
+type Config struct {
+	// AgentAddr the address where the agent is located.
+	AgentAddr string
+
+	// Env name of the environment (tag `ext.Environment`)
+	Env string
+
+	// Service the name of the service (tag `ext.ServiceName`)
+	Service string
+}
 
 // SpanOption function altering a span before finishing it. This can be used to add custom tags to the span.
 type SpanOption func(tracer.Span, *goyave.Response, *goyave.Request)
@@ -29,7 +41,7 @@ type DatadogUser struct {
 func (u DatadogUser) String() string {
 	json, err := json.Marshal(u)
 	if err != nil {
-		panic(err)
+		panic(errors.New(err))
 	}
 	return string(json)
 }
@@ -48,12 +60,12 @@ type DatadogUserConverter interface {
 //
 // It will stop and replace any running tracer, meaning that calling it
 // several times will result in a restart of the tracer by replacing the current instance with a new one.
-func Start(opts ...tracer.StartOption) {
+func Start(cfg Config, opts ...tracer.StartOption) {
 	tracer.Start(
 		append([]tracer.StartOption{
-			tracer.WithAgentAddr(config.GetString("app.datadog.agentAddr")),
-			tracer.WithService(config.GetString("app.datadog.service")),
-			tracer.WithEnv(config.GetString("app.environment")),
+			tracer.WithAgentAddr(cfg.AgentAddr),
+			tracer.WithService(cfg.Service),
+			tracer.WithEnv(cfg.Env),
 		}, opts...)...,
 	)
 }
