@@ -7,7 +7,7 @@ toolchain go1.21.4
 require (
 	github.com/stretchr/testify v1.8.4
 	gopkg.in/DataDog/dd-trace-go.v1 v1.55.0
-	goyave.dev/goyave/v5 v5.0.0-rc5
+	goyave.dev/goyave/v5 v5.0.0-rc12
 )
 
 require (
@@ -38,15 +38,16 @@ require (
 	go.uber.org/atomic v1.11.0 // indirect
 	go4.org/intern v0.0.0-20230525184215-6c62f75575cb // indirect
 	go4.org/unsafe/assume-no-moving-gc v0.0.0-20230525183740-e7c30c78aeb2 // indirect
-	golang.org/x/exp v0.0.0-20240119083558-1b970713d09a // indirect
-	golang.org/x/mod v0.14.0 // indirect
-	golang.org/x/sys v0.11.0 // indirect
+	golang.org/x/exp v0.0.0-20240506185415-9bf2ced13842 // indirect
+	golang.org/x/mod v0.17.0 // indirect
+	golang.org/x/sync v0.7.0 // indirect
+	golang.org/x/sys v0.20.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
-	golang.org/x/tools v0.17.0 // indirect
+	golang.org/x/tools v0.21.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/protobuf v1.30.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	gorm.io/gorm v1.25.6 // indirect
+	gorm.io/gorm v1.25.10 // indirect
 	goyave.dev/copier v0.4.3 // indirect
 	inet.af/netaddr v0.0.0-20230525184311-b8eac61e914a // indirect
 )
