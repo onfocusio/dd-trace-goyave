@@ -29,12 +29,12 @@ In the `main` function, start the tracer after loading the config:
 import goyavetrace "github.com/onfocusio/dd-trace-goyave"
 
 func main() {
-    err := config.Load()
-    if err != nil {
-        //...
+    cfg := goyavetrace.Config{
+        AgentAddr: config.GetString("app.datadog.agentAddr"),
+        Env:       config.GetString("app.environment"),
+        Service:   config.GetString("app.datadog.service"),
     }
-
-    goyavetrace.Start()
+    goyavetrace.Start(cfg)
     defer goyavetrace.Stop()
 }
 ```
@@ -54,9 +54,12 @@ func Register(router *goyave.Router) {
         s.SetTag(ext.ManualKeep, true)
     }
 
-    router.GlobalMiddleware((&goyavetrace.Middleware{
-        SpanOption: spanOption, // Optional
-    }).Handle)
+    cfg := goyavetrace.Config{
+        AgentAddr: config.GetString("app.datadog.agentAddr"),
+        Env:       config.GetString("app.environment"),
+        Service:   config.GetString("app.datadog.service"),
+    }
+    router.GlobalMiddleware(goyavetrace.NewMiddleware(cfg, spanOption))
 
     //...
 }
