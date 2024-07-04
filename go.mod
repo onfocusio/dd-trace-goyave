@@ -2,8 +2,6 @@ module github.com/onfocusio/dd-trace-goyave
 
 go 1.21
 
-toolchain go1.21.4
-
 require (
 	github.com/stretchr/testify v1.8.4
 	gopkg.in/DataDog/dd-trace-go.v1 v1.65.1
