@@ -3,7 +3,7 @@ module github.com/onfocusio/dd-trace-goyave
 go 1.23.8
 
 require (
-	github.com/DataDog/dd-trace-go/v2 v2.1.0-dev.1
+	github.com/DataDog/dd-trace-go/v2 v2.0.1
 	github.com/stretchr/testify v1.10.0
 	goyave.dev/goyave/v5 v5.0.0
 )

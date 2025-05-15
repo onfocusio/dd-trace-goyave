@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go: ["1.21", "1.22"]
+        go: ["1.23", "1.24"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -24,9 +24,9 @@ jobs:
         run: |
           go test -v -race -coverprofile=coverage.txt -covermode=atomic -coverpkg=./... ./...
           go tool cover -html=coverage.txt -o coverage.html
-      - if: ${{ matrix.go == '1.22' }}
+      - if: ${{ matrix.go == '1.24' }}
         name: 'Upload Coverage artifact'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage
           path: coverage.html
@@ -39,10 +39,17 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.22"
+          go-version: "1.24"
           cache: false
       - name: Run lint
         uses: golangci/golangci-lint-action@v6
         with:
-          version: v1.58
+          version: v1.64
           args: --timeout 5m
+
+  govulncheck:
+    name: Check vulnerabilities
+    runs-on: ubuntu-latest
+    steps:
+      - id: govulncheck
+        uses: golang/govulncheck-action@v1
