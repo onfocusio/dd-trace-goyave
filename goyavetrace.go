@@ -3,7 +3,7 @@ package goyavetrace
 import (
 	"encoding/json"
 
-	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
+	"github.com/DataDog/dd-trace-go/v2/ddtrace/tracer"
 	"goyave.dev/goyave/v5"
 	"goyave.dev/goyave/v5/util/errors"
 )
@@ -28,7 +28,7 @@ type Config struct {
 }
 
 // SpanOption function altering a span before finishing it. This can be used to add custom tags to the span.
-type SpanOption func(tracer.Span, *goyave.Response, *goyave.Request)
+type SpanOption func(*tracer.Span, *goyave.Response, *goyave.Request)
 
 // DatadogUser minimal structure to identify a user at the origin of a trace.
 type DatadogUser struct {
@@ -60,8 +60,8 @@ type DatadogUserConverter interface {
 //
 // It will stop and replace any running tracer, meaning that calling it
 // several times will result in a restart of the tracer by replacing the current instance with a new one.
-func Start(cfg Config, opts ...tracer.StartOption) {
-	tracer.Start(
+func Start(cfg Config, opts ...tracer.StartOption) error {
+	return tracer.Start(
 		append([]tracer.StartOption{
 			tracer.WithAgentAddr(cfg.AgentAddr),
 			tracer.WithService(cfg.Service),

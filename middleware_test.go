@@ -6,11 +6,11 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/DataDog/dd-trace-go/v2/ddtrace/ext"
+	"github.com/DataDog/dd-trace-go/v2/ddtrace/mocktracer"
+	"github.com/DataDog/dd-trace-go/v2/ddtrace/tracer"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/ext"
-	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/mocktracer"
-	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 	"goyave.dev/goyave/v5"
 	"goyave.dev/goyave/v5/config"
 	"goyave.dev/goyave/v5/slog"
@@ -80,7 +80,7 @@ func TestWriter(t *testing.T) {
 	assert.Equal(t, "/test/param-value", span.Tag(ext.HTTPURL))
 	assert.Equal(t, http.MethodGet, span.Tag(ext.HTTPMethod))
 	assert.Equal(t, "test-route", span.Tag(ext.HTTPRoute))
-	assert.Equal(t, http.StatusForbidden, span.Tag(ext.HTTPCode))
+	assert.InDelta(t, float64(http.StatusForbidden), span.Tag(ext.HTTPCode), 0)
 	assert.Equal(t, `{"Name":"test","Email":"test@example.org","ID":1}`, span.Tag(TagUser))
 	assert.Equal(t, uint64(1234567), span.ParentID())
 	assert.Equal(t, uint64(7654321), span.TraceID())
@@ -127,8 +127,9 @@ func TestWriterWithError(t *testing.T) {
 	assert.Equal(t, "/test", span.Tag(ext.HTTPURL))
 	assert.Equal(t, http.MethodGet, span.Tag(ext.HTTPMethod))
 	assert.Equal(t, "test-route", span.Tag(ext.HTTPRoute))
-	assert.Equal(t, http.StatusInternalServerError, span.Tag(ext.HTTPCode))
-	assert.Equal(t, "custom error", span.Tag(ext.Error).(error).Error())
+	assert.InDelta(t, float64(http.StatusInternalServerError), span.Tag(ext.HTTPCode), 0)
+	assert.Equal(t, "custom error", span.Tag(ext.ErrorMsg))
+	assert.Equal(t, "*errors.Error", span.Tag(ext.ErrorType))
 	assert.NotEmpty(t, span.Tag(ext.ErrorStack))
 	// In actual implementation (not mock), the ext.ErrorMsg and ext.ErrorType are added
 }
@@ -141,7 +142,7 @@ func TestSpanContext(t *testing.T) {
 		AgentAddr: "localhost:8126",
 		Env:       "test",
 		Service:   "service-name",
-	}, func(s tracer.Span, resp *goyave.Response, req *goyave.Request) {
+	}, func(s *tracer.Span, resp *goyave.Response, req *goyave.Request) {
 		assert.NotNil(t, resp)
 		assert.NotNil(t, req)
 		s.SetTag(ext.ManualKeep, true)
@@ -184,6 +185,6 @@ func TestSpanContext(t *testing.T) {
 		assert.Equal(t, "/test", span.Tag(ext.HTTPURL))
 		assert.Equal(t, http.MethodGet, span.Tag(ext.HTTPMethod))
 		assert.Equal(t, "test-route", span.Tag(ext.HTTPRoute))
-		assert.Equal(t, true, span.Tag(ext.ManualKeep))
+		assert.InDelta(t, float64(ext.PriorityUserKeep), span.Tag("_sampling_priority_v1"), 0)
 	}
 }
