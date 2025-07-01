@@ -1,51 +1,63 @@
-linters-settings:
-  gocyclo:
-    min-complexity: 15
-  gofmt:
-    simplify: true
-  misspell:
-    locale: US
-  govet:
-    disable:
-      - shadow
-      - nilness
-    enable-all: true
-  testifylint:
-    disable:
-      - require-error
-      - error-nil
-      - formatter
-      - encoded-compare
-
+version: "2"
 linters:
   enable:
-    - gofmt
-    - revive
+    - bodyclose
+    - copyloopvar
     - gocyclo
+    - inamedparam
     - misspell
+    - revive
+    - testifylint
+    - whitespace
     - govet
     - unused
     - errcheck
-    - copyloopvar
-    - gosimple
     - ineffassign
     - staticcheck
-    - testifylint
-    - whitespace
-    - bodyclose
-    - inamedparam
-  disable-all: false
-  fast: false
-
+  settings:
+    gocyclo:
+      min-complexity: 15
+    govet:
+      disable:
+        - shadow
+        - nilness
+      enable-all: true
+    misspell:
+      locale: US
+    revive:
+      rules:
+        - name: unused-parameter
+          disabled: false
+        - name: use-any
+          disabled: false
+    testifylint:
+      disable:
+        - require-error
+        - error-nil
+        - formatter
+        - encoded-compare
+    staticcheck:
+      checks: ["all", "-QF1001"]
+  exclusions:
+    generated: strict
+    rules:
+      - linters:
+          - gocyclo
+        path: _test\.go
+      - path: (.+)\.go$
+        text: should have a package comment
+    paths:
+      - .github
 issues:
-  exclude-use-default: false
   max-issues-per-linter: 0
   max-same-issues: 0
-  exclude-dirs:
-    - .github
-  exclude:
-    - should have a package comment
-  exclude-rules:
-    - path: _test\.go
-      linters:
-        - gocyclo
+formatters:
+  enable:
+    - gofmt
+  settings:
+    gofmt:
+      simplify: true
+  exclusions:
+    generated: strict
+    paths:
+      - .github
