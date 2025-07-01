@@ -18,9 +18,6 @@ linters:
     gocyclo:
       min-complexity: 15
     govet:
-      disable:
-        - shadow
-        - nilness
       enable-all: true
     misspell:
       locale: US

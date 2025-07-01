@@ -34,7 +34,11 @@ func main() {
         Env:       config.GetString("app.environment"),
         Service:   config.GetString("app.datadog.service"),
     }
-    goyavetrace.Start(cfg)
+    err := goyavetrace.Start(cfg)
+    if err != nil {
+        fmt.Fprintln(os.Stderr, err)
+        os.Exit(1)
+    }
     defer goyavetrace.Stop()
 }
 ```
@@ -50,7 +54,7 @@ import goyavetrace "github.com/onfocusio/dd-trace-goyave"
 func Register(router *goyave.Router) {
 
     // Add custom tags to the spans
-    spanOption := func(s tracer.Span, _ *goyave.Response, _ *goyave.Request) {
+    spanOption := func(s *tracer.Span, _ *goyave.Response, _ *goyave.Request) {
         s.SetTag(ext.ManualKeep, true)
     }
 
