@@ -3,9 +3,8 @@ package goyavetrace
 import (
 	"io"
 
-	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace"
-	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/ext"
-	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
+	"github.com/DataDog/dd-trace-go/v2/ddtrace/ext"
+	"github.com/DataDog/dd-trace-go/v2/ddtrace/tracer"
 	"goyave.dev/goyave/v5"
 	"goyave.dev/goyave/v5/util/errors"
 )
@@ -17,7 +16,7 @@ type Writer struct {
 	writer      io.Writer
 	request     *goyave.Request
 	response    *goyave.Response
-	span        tracer.Span
+	span        *tracer.Span
 	spanOptions []SpanOption
 }
 
@@ -37,7 +36,7 @@ func NewWriter(response *goyave.Response, request *goyave.Request, cfg Config, s
 		tracer.Tag(ext.HTTPUserAgent, request.UserAgent()),
 		tracer.Tag(ext.SpanKind, ext.SpanKindServer),
 		tracer.Tag(ext.Component, componentName),
-		func(cfg *ddtrace.StartSpanConfig) {
+		func(cfg *tracer.StartSpanConfig) {
 			if spanctx, err := tracer.Extract(tracer.HTTPHeadersCarrier(request.Header())); err == nil {
 				cfg.Parent = spanctx
 			}
