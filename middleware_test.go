@@ -31,13 +31,14 @@ func TestWriter(t *testing.T) {
 	mt := mocktracer.Start()
 	defer mt.Stop()
 
+	server := testutil.NewTestServerWithOptions(t, goyave.Options{Config: config.LoadDefault()})
+
 	middleware := NewMiddleware(Config{
+		Logger:    server.Logger,
 		AgentAddr: "localhost:8126",
 		Env:       "test",
 		Service:   "service-name",
 	})
-
-	server := testutil.NewTestServerWithOptions(t, goyave.Options{Config: config.LoadDefault()})
 
 	request := server.NewTestRequest(http.MethodGet, "/test/param-value", nil)
 	request.Header().Set(tracer.DefaultParentIDHeader, "1234567")
@@ -90,15 +91,16 @@ func TestWriterWithError(t *testing.T) {
 	mt := mocktracer.Start()
 	defer mt.Stop()
 
-	middleware := NewMiddleware(Config{
-		AgentAddr: "localhost:8126",
-		Env:       "test",
-		Service:   "service-name",
-	})
-
 	server := testutil.NewTestServerWithOptions(t, goyave.Options{
 		Config: config.LoadDefault(),
 		Logger: slog.New(slog.NewHandler(false, &bytes.Buffer{})),
+	})
+
+	middleware := NewMiddleware(Config{
+		Logger:    server.Logger,
+		AgentAddr: "localhost:8126",
+		Env:       "test",
+		Service:   "service-name",
 	})
 
 	request := server.NewTestRequest(http.MethodGet, "/test", nil)
@@ -138,7 +140,10 @@ func TestSpanContext(t *testing.T) {
 	mt := mocktracer.Start()
 	defer mt.Stop()
 
+	server := testutil.NewTestServerWithOptions(t, goyave.Options{Config: config.LoadDefault()})
+
 	middleware := NewMiddleware(Config{
+		Logger:    server.Logger,
 		AgentAddr: "localhost:8126",
 		Env:       "test",
 		Service:   "service-name",
@@ -147,8 +152,6 @@ func TestSpanContext(t *testing.T) {
 		assert.NotNil(t, req)
 		s.SetTag(ext.ManualKeep, true)
 	})
-
-	server := testutil.NewTestServerWithOptions(t, goyave.Options{Config: config.LoadDefault()})
 
 	request := server.NewTestRequest(http.MethodGet, "/test", nil)
 	request.Route = server.Router().Get("/test/{param}", nil).Name("test-route")

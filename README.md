@@ -30,6 +30,7 @@ import goyavetrace "github.com/onfocusio/dd-trace-goyave"
 
 func main() {
     cfg := goyavetrace.Config{
+        Logger:    server.Logger,
         AgentAddr: config.GetString("app.datadog.agentAddr"),
         Env:       config.GetString("app.environment"),
         Service:   config.GetString("app.datadog.service"),

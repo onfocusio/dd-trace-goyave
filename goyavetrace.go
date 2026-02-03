@@ -5,6 +5,7 @@ import (
 
 	"github.com/DataDog/dd-trace-go/v2/ddtrace/tracer"
 	"goyave.dev/goyave/v5"
+	"goyave.dev/goyave/v5/slog"
 	"goyave.dev/goyave/v5/util/errors"
 )
 
@@ -17,6 +18,10 @@ const (
 
 // Config common information for all traces.
 type Config struct {
+	// Logger optional unified logger to use as the tracer output
+	// through the tracer.AdaptLogger option.
+	Logger *slog.Logger
+
 	// AgentAddr the address where the agent is located.
 	AgentAddr string
 
@@ -61,13 +66,17 @@ type DatadogUserConverter interface {
 // It will stop and replace any running tracer, meaning that calling it
 // several times will result in a restart of the tracer by replacing the current instance with a new one.
 func Start(cfg Config, opts ...tracer.StartOption) error {
-	return tracer.Start(
-		append([]tracer.StartOption{
-			tracer.WithAgentAddr(cfg.AgentAddr),
-			tracer.WithService(cfg.Service),
-			tracer.WithEnv(cfg.Env),
-		}, opts...)...,
-	)
+	options := []tracer.StartOption{
+		tracer.WithAgentAddr(cfg.AgentAddr),
+		tracer.WithService(cfg.Service),
+		tracer.WithEnv(cfg.Env),
+	}
+
+	if cfg.Logger != nil {
+		options = append(options, tracer.WithLogger(tracer.AdaptLogger(AdaptLoggerFn(cfg.Logger))))
+	}
+
+	return tracer.Start(append(options, opts...)...)
 }
 
 // Stop stops the started tracer. Subsequent calls are valid but become no-op.
